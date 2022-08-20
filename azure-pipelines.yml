@@ -7,21 +7,24 @@ pool:
   - npm #especifica que necesitamosnpm instalado en el sistme
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'Release' #especifica config de compilacion
+  #agrega estas vvaribales porque se repiten mucho
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+  dotnetSdkVersion: '6.x' #version de sdk que necesitamso 
 
 steps: #conjutno de build task
 - task: UseDotNet@2 # isntala las herramintas de compilacion requeridas para ejecutar el agente 
-  displayName: 'Use .NET SDK 6.x'
+  displayName: 'Use .NET SDK $(dotnetSdkVersion)' #6.x
   inputs:
     packageType: sdk
-    version: '6.x'
+    version: $(dotnetSdkVersion) #'6.x'
 
 - task: Npm@1
   displayName: 'Run npm install'
   inputs:
     verbose: false
 
-- script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output Tailspin.SpaceGame.Web/wwwroot'
+- script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)' #convierte archivos node Sass a CSS
   displayName: 'Compile Sass assets'
 
 - task: gulp@1
@@ -30,7 +33,7 @@ steps: #conjutno de build task
 - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt' #esto es para que corra en consola, se lo peude poner de esta forma o como pongo abajo #este comando -> almacena info sobre el nombre de la pipeline, el id, el nombre de la build (por defecto es la fecha)
 #- task: cmdLine@2 pero nose que mas hbaria que agregar para que haga ese comadno xd
   displayName: 'Write build info'
-  workingDirectory: Tailspin.SpaceGame.Web/wwwroot
+  workingDirectory: $(wwwrootDir)  #Tailspin.SpaceGame.Web/wwwroot
 
 - task: DotNetCoreCLI@2 #mapea con el comando dotnet 
   displayName: 'Restore project dependencies'
@@ -39,19 +42,19 @@ steps: #conjutno de build task
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build the project - Release'
+  displayName: 'Build the project - $(buildConfiguration)'
   inputs:
     command: 'build' # para buildear el rpecto
-    arguments: '--no-restore --configuration Release'
+    arguments: '--no-restore --configuration  $(buildConfiguration)'
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2 #empaquetar los resultados de compilacion en una carpeta 
-  displayName: 'Publish the project - Release'
+  displayName: 'Publish the project - $(buildConfiguration)' #Release'
   inputs:
     command: 'publish'
     projects: '**/*.csproj'
     publishWebProjects: false
-    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    arguments: '--no-build --configuration  $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
     zipAfterPublish: true #ponerlos en un zip
 
 - task: PublishBuildArtifacts@1 #publica el archivo en la pipeline 
