@@ -44,3 +44,16 @@ steps: #conjutno de build task
     command: 'build' # para buildear el rpecto
     arguments: '--no-restore --configuration Release'
     projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2 #empaquetar los resultados de compilacion en una carpeta 
+  displayName: 'Publish the project - Release'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: false
+    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    zipAfterPublish: true #ponerlos en un zip
+
+- task: PublishBuildArtifacts@1 #publica el archivo en la pipeline 
+  displayName: 'Publish Artifact: drop'
+  condition: succeeded() #ejecuta la tarea solo si la tarea anterior se jecuta correctamente #esta es la predeterminada, no hace falta ponerla 
