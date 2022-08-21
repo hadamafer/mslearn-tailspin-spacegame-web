@@ -41,21 +41,33 @@ steps: #conjutno de build task
     command: 'restore' #para reiniciar o instalar las dependencias 
     projects: '**/*.csproj'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build the project - $(buildConfiguration)'
-  inputs:
-    command: 'build' # para buildear el rpecto
-    arguments: '--no-restore --configuration  $(buildConfiguration)'
-    projects: '**/*.csproj'
+# # --compialciony piblicacion de lanzamiento de proyecto 
+# - task: DotNetCoreCLI@2
+#   displayName: 'Build the project - $(buildConfiguration)'
+#   inputs:
+#     command: 'build' # para buildear el rpecto
+#     arguments: '--no-restore --configuration  $(buildConfiguration)'
+#     projects: '**/*.csproj'
 
-- task: DotNetCoreCLI@2 #empaquetar los resultados de compilacion en una carpeta 
-  displayName: 'Publish the project - $(buildConfiguration)' #Release'
-  inputs:
-    command: 'publish'
-    projects: '**/*.csproj'
-    publishWebProjects: false
-    arguments: '--no-build --configuration  $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
-    zipAfterPublish: true #ponerlos en un zip
+# - task: DotNetCoreCLI@2 #empaquetar los resultados de compilacion en una carpeta 
+#   displayName: 'Publish the project - $(buildConfiguration)' #Release'
+#   inputs:
+#     command: 'publish'
+#     projects: '**/*.csproj'
+#     publishWebProjects: false
+#     arguments: '--no-build --configuration  $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+#     zipAfterPublish: true #ponerlos en un zip
+
+
+
+#tarea de compilacion y publicacion pero utilizando template -> reemplaza las tareas por llamadas al template, donde ejecuta dos veces esas tareas 
+- template: templates/build.yml
+  parameters:
+    buildConfiguration: 'Debug'
+
+- template: templates/build.yml
+  parameters: #paramatros de entrada
+    buildConfiguration: 'Release'
 
 - task: PublishBuildArtifacts@1 #publica el archivo en la pipeline 
   displayName: 'Publish Artifact: drop'
